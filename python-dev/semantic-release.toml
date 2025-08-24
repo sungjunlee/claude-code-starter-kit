@@ -1,0 +1,118 @@
+# Semantic Release Configuration (Optional)
+# Rename to .releaserc.toml to activate
+# Or add to pyproject.toml under [tool.semantic_release]
+
+[semantic_release]
+# Version locations to update
+version_toml = ["pyproject.toml:project.version"]
+version_pattern = [
+    "src/__init__.py:__version__",
+    "src/__version__.py:VERSION",
+]
+
+# Branch configuration
+branch = "main"
+upload_to_repository = false
+upload_to_release = true
+build_command = "python -m build"
+dist_path = "dist/"
+
+# Changelog configuration
+changelog_file = "CHANGELOG.md"
+changelog_placeholder = "<!-- version placeholder -->"
+changelog_sections = [
+    "feature",
+    "fix",
+    "breaking",
+    "documentation",
+    "performance",
+    "refactor",
+]
+
+# Commit parsing
+[semantic_release.commit_parser_options]
+allowed_types = [
+    "build",
+    "chore",
+    "ci",
+    "docs",
+    "feat",
+    "fix",
+    "perf",
+    "style",
+    "refactor",
+    "test",
+]
+minor_types = ["feat"]
+patch_types = ["fix", "perf", "refactor", "docs", "style", "test"]
+default_bump_level = 0  # 0=none, 1=patch, 2=minor, 3=major
+
+# Remote configuration
+[semantic_release.remote]
+name = "origin"
+type = "github"
+ignore_token_for_push = false
+
+# Hooks for custom actions
+[semantic_release.hooks]
+before_commit = [
+    # Run tests before creating release commit
+    "pytest --tb=short -q",
+    # Update documentation
+    "[ -f scripts/update_docs.sh ] && bash scripts/update_docs.sh",
+]
+
+after_bump = [
+    # Any post-version-bump actions
+]
+
+after_release = [
+    # Clean up dist directory
+    "rm -rf dist/",
+    # Notify team (example)
+    # "curl -X POST https://hooks.slack.com/..."
+]
+
+# Version branch configuration (for maintenance branches)
+[semantic_release.branches]
+# Configure multiple branches if needed
+# main = { match = "main", prerelease = false }
+# beta = { match = "beta", prerelease = true, prerelease_token = "beta" }
+# alpha = { match = "alpha", prerelease = true, prerelease_token = "alpha" }
+
+# Commit message templates
+[semantic_release.commit_message]
+# Customize the release commit message
+format = "chore(release): {version} [skip ci]\n\n{changelog}"
+
+# Changelog templates
+[semantic_release.changelog]
+template = """
+# Changelog
+
+## {version} ({date})
+
+{sections}
+"""
+
+section_template = """
+### {section_title}
+
+{commits}
+"""
+
+commit_template = "- {message} ([{short_hash}]({commit_url}))"
+
+# Section titles mapping
+[semantic_release.changelog.sections]
+breaking = "⚠ BREAKING CHANGES"
+feature = "✨ Features"
+fix = "🐛 Bug Fixes"
+performance = "⚡ Performance"
+refactor = "♻️ Refactoring"
+documentation = "📝 Documentation"
+style = "💄 Style"
+test = "✅ Tests"
+build = "📦 Build"
+ci = "👷 CI"
+chore = "🔧 Chores"

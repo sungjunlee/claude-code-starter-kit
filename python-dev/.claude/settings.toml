@@ -1,0 +1,84 @@
+# Claude Code settings for Python development
+# Optimized configuration with smart automation
+
+# Global settings
+[ui]
+pretty_print = true
+
+# 🚀 Primary workflow: Format and validate Python files
+[[hooks]]
+event = "PostToolUse"
+[hooks.matcher]
+tool_name = "Edit"
+file_paths = ["*.py", "src/**/*.py"]
+command = """
+echo '🚀 Formatting Python files...'
+ruff check --fix $CLAUDE_FILE_PATHS --quiet && ruff format $CLAUDE_FILE_PATHS --quiet
+echo '✅ Formatting complete'
+"""
+
+# 🧪 Smart testing: Run tests when source or test files change
+[[hooks]]
+event = "PostToolUse"
+run_in_background = true
+[hooks.matcher]
+tool_name = "Edit"
+file_paths = ["src/**/*.py", "tests/**/*.py"]
+command = """
+if [[ "$CLAUDE_FILE_PATHS" =~ tests/ ]]; then
+  echo '🧪 Running tests with coverage...'
+  pytest --cov=src --cov-report=term-missing -q
+else
+  echo '🧪 Running quick tests...'
+  pytest --tb=short -q
+fi
+"""
+
+# 📦 Dependency management: Sync when project config changes
+[[hooks]]
+event = "PostToolUse"
+[hooks.matcher]
+tool_name = "Edit"
+file_paths = ["pyproject.toml"]
+command = "echo '📦 Syncing dependencies...' && uv lock --quiet && uv sync --quiet && echo '✅ Dependencies synchronized'"
+
+# 🔍 Quality checks: Type checking and security (background)
+[[hooks]]
+event = "PostToolUse"
+run_in_background = true
+[hooks.matcher]
+tool_name = "Edit"
+file_paths = ["src/**/*.py"]
+command = """
+echo '🔍 Running quality checks...'
+mypy src/ --no-error-summary 2>/dev/null && echo '  ✅ Type check passed' || echo '  ⚠️  Type issues found'
+bandit -r src/ -f txt -q 2>/dev/null && echo '  ✅ Security check passed' || echo '  ⚠️  Security issues found'
+"""
+
+# 📚 Documentation update: Conditional and smart
+[[hooks]]
+event = "PostToolUse"
+run_in_background = true
+[hooks.matcher]
+tool_name = "Edit"
+file_paths = ["src/**/*.py"]
+command = "[ -f scripts/update_docs.sh ] && bash scripts/update_docs.sh 2>/dev/null || true"
+
+# 💡 Code quality hints: Check for unused code (non-blocking)
+[[hooks]]
+event = "PostToolUse"
+run_in_background = true
+[hooks.matcher]
+tool_name = "Edit"
+file_paths = ["src/**/*.py"]
+command = """
+if command -v autoflake &> /dev/null; then
+  autoflake --check --remove-unused-variables $CLAUDE_FILE_PATHS 2>&1 | grep -q "would be reformatted" && \
+  echo "💡 Tip: Run '/py-clean' to remove unused code" || true
+fi
+"""
+
+# 📈 Project health: Lightweight status check
+[[hooks]]
+event = "UserPromptSubmit"
+command = "uv sync --quiet 2>/dev/null && echo '📈 Ready ✅' || true"

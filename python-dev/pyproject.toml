@@ -1,0 +1,194 @@
+[project]
+name = "my-python-project"
+version = "0.1.0"
+description = "A modern Python project template using uv and ruff"
+readme = "README.md"
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["python", "template", "uv", "ruff"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Core dependencies
+dependencies = [
+    # Add your project dependencies here
+    # "requests>=2.31.0",
+    # "click>=8.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/my-python-project"
+Documentation = "https://github.com/yourusername/my-python-project#readme"
+Repository = "https://github.com/yourusername/my-python-project"
+"Bug Reports" = "https://github.com/yourusername/my-python-project/issues"
+
+[project.optional-dependencies]
+# Development dependencies
+dev = [
+    "ruff>=0.11.0",
+    "mypy>=1.7.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.3.0",
+    "bandit>=1.7.0",
+    "pre-commit>=3.5.0",
+    "autoflake>=2.2.0",  # Remove unused imports/variables
+    "vulture>=2.10",     # Dead code detection
+    "pip-audit>=2.6.0",  # Security vulnerability scanning
+]
+
+# Documentation dependencies (optional)
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.24.0",
+    "sphinx>=7.2.0",
+    "pdoc>=14.0.0",
+]
+
+# Release automation (optional)
+release = [
+    "python-semantic-release>=8.5.0",
+    "build>=1.0.0",
+    "twine>=4.0.0",
+]
+
+# Performance testing
+perf = [
+    "pytest-benchmark>=4.0.0",
+    "memory-profiler>=0.61.0",
+]
+
+[project.scripts]
+# Define CLI entry points here if your project provides command-line tools
+# my-cli = "my_python_project.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+# Uncomment and modify if you create a package structure:
+# packages = ["src/your_package_name"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.github",
+    "/docs",
+    "/tests",
+    "/.vscode",
+    "/.claude",
+]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["ARG", "S101"]  # Allow unused args and asserts in tests
+"__init__.py" = ["F401"]         # Allow unused imports in __init__.py
+
+[tool.ruff.lint.isort]
+known-first-party = []  # Add your package names here when you create them
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# Bandit security linter configuration
+[tool.bandit]
+exclude_dirs = ["tests", "build", "dist"]
+tests = ["B201", "B301"]
+skips = ["B101", "B601"]
