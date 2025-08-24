@@ -347,14 +347,15 @@ def markdown_to_html(markdown_file: Path, template_name: Optional[str] = None) -
             'task_list',
             'cuddled-lists',    # Better list formatting
             'header-ids',       # Automatic header IDs for navigation
-            'wiki-tables'       # Enhanced table support
+            'wiki-tables',      # Enhanced table support
+            'highlightjs-lang'  # Language class for code blocks (enables mermaid detection)
         ]
     )
     
     # Process Mermaid diagrams - convert ```mermaid blocks to proper divs
     import re
-    # markdown2 generates class="language-mermaid" for ```mermaid blocks
-    mermaid_pattern = r'<pre><code class="language-mermaid">(.*?)</code></pre>'
+    # markdown2 with highlightjs-lang generates class="mermaid language-mermaid" for ```mermaid blocks
+    mermaid_pattern = r'<pre><code class="mermaid language-mermaid">(.*?)</code></pre>'
     html_content = re.sub(mermaid_pattern, r'<div class="mermaid">\1</div>', html_content, flags=re.DOTALL)
     
     # Generate TOC if placeholder exists
