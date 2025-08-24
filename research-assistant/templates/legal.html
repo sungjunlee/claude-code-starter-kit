@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            line-height: 1.8;
+            color: #000;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 30mm 25mm;
+            background: white;
+        }
+        
+        /* 법률 문서 스타일 */
+        h1 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 24pt;
+            text-align: center;
+            margin: 40px 0;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+        
+        h2 {
+            font-size: 14pt;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #000;
+            font-weight: 700;
+        }
+        
+        h3 {
+            font-size: 12pt;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        p {
+            text-align: justify;
+            text-indent: 2em;
+            margin: 10px 0;
+        }
+        
+        /* 법령 인용 스타일 */
+        blockquote {
+            margin: 20px 40px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-left: 4px solid #333;
+            font-style: normal;
+        }
+        
+        blockquote p {
+            text-indent: 0;
+        }
+        
+        /* 판례 인용 */
+        .case-citation {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+        
+        /* 조항 번호 */
+        ol {
+            counter-reset: item;
+            padding-left: 0;
+        }
+        
+        ol > li {
+            display: block;
+            margin: 10px 0;
+        }
+        
+        ol > li:before {
+            content: "제" counter(item) "조. ";
+            counter-increment: item;
+            font-weight: bold;
+        }
+        
+        /* 표 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 10pt;
+        }
+        
+        th {
+            background-color: #e0e0e0;
+            border: 1px solid #000;
+            padding: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        td {
+            border: 1px solid #000;
+            padding: 8px;
+        }
+        
+        /* 각주 */
+        .footnote {
+            font-size: 9pt;
+            vertical-align: super;
+            color: #0066cc;
+        }
+        
+        .footnotes {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #000;
+            font-size: 9pt;
+        }
+        
+        /* 서명란 */
+        .signature-block {
+            margin-top: 60px;
+            text-align: right;
+        }
+        
+        .signature-date {
+            margin: 20px 0;
+        }
+        
+        .signature-line {
+            display: inline-block;
+            width: 200px;
+            border-bottom: 1px solid #000;
+            margin: 0 20px;
+        }
+        
+        /* 메타데이터 */
+        .metadata {
+            border: 2px solid #000;
+            padding: 20px;
+            margin-bottom: 40px;
+            background-color: #fafafa;
+        }
+        
+        .metadata h3 {
+            margin-top: 0;
+            font-size: 14pt;
+        }
+        
+        .metadata-item {
+            display: flex;
+            margin: 8px 0;
+        }
+        
+        .metadata-label {
+            font-weight: bold;
+            width: 120px;
+        }
+        
+        .metadata-value {
+            flex: 1;
+        }
+        
+        /* 인쇄 스타일 */
+        @media print {
+            body {
+                font-size: 10pt;
+                padding: 15mm 20mm;
+            }
+            
+            h1 { page-break-after: avoid; }
+            h2, h3 { page-break-after: avoid; }
+            
+            blockquote { page-break-inside: avoid; }
+            table { page-break-inside: avoid; }
+            
+            .metadata {
+                background-color: #f5f5f5 !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            @page {
+                margin: 20mm;
+                size: A4;
+            }
+        }
+    </style>
+    {% if custom_css %}
+    <style>{{ custom_css }}</style>
+    {% endif %}
+</head>
+<body>
+    {% if metadata %}
+    <div class="metadata">
+        <h3>문서 정보</h3>
+        {% if metadata.title %}
+        <div class="metadata-item">
+            <span class="metadata-label">제목:</span>
+            <span class="metadata-value">{{ metadata.title }}</span>
+        </div>
+        {% endif %}
+        {% if metadata.case_number %}
+        <div class="metadata-item">
+            <span class="metadata-label">사건번호:</span>
+            <span class="metadata-value">{{ metadata.case_number }}</span>
+        </div>
+        {% endif %}
+        {% if metadata.court %}
+        <div class="metadata-item">
+            <span class="metadata-label">법원:</span>
+            <span class="metadata-value">{{ metadata.court }}</span>
+        </div>
+        {% endif %}
+        {% if metadata.date %}
+        <div class="metadata-item">
+            <span class="metadata-label">작성일:</span>
+            <span class="metadata-value">{{ metadata.date }}</span>
+        </div>
+        {% endif %}
+        {% if metadata.author %}
+        <div class="metadata-item">
+            <span class="metadata-label">작성자:</span>
+            <span class="metadata-value">{{ metadata.author }}</span>
+        </div>
+        {% endif %}
+        {% if metadata.sources_count %}
+        <div class="metadata-item">
+            <span class="metadata-label">참조 법령/판례:</span>
+            <span class="metadata-value">{{ metadata.sources_count }}건</span>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {{ content }}
+    
+    {% if metadata.signature_required %}
+    <div class="signature-block">
+        <div class="signature-date">
+            <p>{{ metadata.signature_date | default(generated_date) }}</p>
+        </div>
+        <div>
+            <span>작성자:</span>
+            <span class="signature-line"></span>
+            <span>(인)</span>
+        </div>
+    </div>
+    {% endif %}
+    
+    <footer style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #666; font-size: 9pt; color: #666;">
+        <p>문서 생성일: {{ generated_date }}</p>
+        <p style="font-size: 8pt;">본 문서는 연구 및 참고 목적으로 작성되었으며, 법적 조언을 구성하지 않습니다.</p>
+    </footer>
+</body>
+</html>

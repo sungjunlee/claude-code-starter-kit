@@ -276,6 +276,99 @@ Claude Code에는 다양한 전문 에이전트가 있습니다:
 
 필요에 따라 적절한 에이전트를 선택하여 사용하세요!
 
+## 📄 문서 변환 기능
+
+연구 결과를 전문적인 문서 형태로 변환할 수 있습니다.
+
+### 지원하는 변환 형식
+
+- **DOCX**: Word 문서 형식 (편집 가능)
+- **PDF**: 인쇄용 문서 형식 (브라우저를 통해)
+- **Excel**: 표 데이터를 스프레드시트로 추출
+
+### 사용 방법
+
+#### 1. 슬래시 명령어 (Claude Code 내에서)
+
+```
+/export-docx report.md                      # Word 문서로 변환
+/export-pdf legal-analysis.md               # PDF 변환용 브라우저 미리보기
+/export-excel market-data.md                # 표를 Excel로 추출
+```
+
+템플릿을 지정하여 다양한 스타일 적용:
+
+```
+/export-docx report.md --template legal     # 법률 문서 템플릿
+/export-pdf analysis.md --template report   # 연구 보고서 템플릿
+```
+
+#### 2. 독립 실행 스크립트
+
+**Windows:**
+```cmd
+convert.bat report.md --docx
+convert.bat report.md --preview --template legal
+convert.bat report.md --excel
+```
+
+**Mac/Linux:**
+```bash
+./convert.sh report.md --docx
+./convert.sh report.md --preview --template legal
+./convert.sh report.md --excel
+```
+
+### 문서 템플릿
+
+연구 목적에 맞는 3가지 전문 템플릿 제공:
+
+#### 📊 **report** (기본 템플릿)
+- 연구 보고서 및 분석 문서용
+- 깔끔한 비즈니스 스타일
+- 데이터 시각화 최적화
+- 통계 정보 및 차트에 적합
+
+#### ⚖️ **legal**  
+- 법률 문서 및 판례 분석용
+- 한국 법률 문서 표준 형식
+- 조문 인용 및 판례 참조 스타일
+- 각주 및 메타데이터 강화
+
+#### 🎯 **presentation**
+- 발표용 슬라이드 형식
+- 키 포인트 강조
+- 시각적 임팩트 최대화
+- 인쇄 시 A4 가로 최적화
+
+### 메타데이터 활용
+
+마크다운 파일 상단에 메타데이터를 추가하면 자동으로 문서에 반영됩니다:
+
+```yaml
+---
+title: 시장 분석 보고서
+author: 김연구
+date: 2024-01-15
+case_number: 2024민5678  # 법률 문서의 경우
+court: 서울중앙지방법원     # 법률 문서의 경우
+agents: research-analyst, market-researcher
+---
+
+# 보고서 내용 시작
+```
+
+### 자동 의존성 설치
+
+모든 변환 도구는 uv를 활용하여 필요한 Python 패키지를 자동으로 설치합니다. 별도 설치 과정이 불필요합니다.
+
+### PDF 변환 팁
+
+1. `/export-pdf` 또는 `--preview` 옵션으로 브라우저를 엽니다
+2. **Ctrl+P** (Windows) 또는 **Cmd+P** (Mac)를 눌러 인쇄 대화상자를 엽니다
+3. "대상"에서 **"PDF로 저장"**을 선택합니다
+4. "기타 설정"에서 여백을 "최소"로 설정하면 더 예쁜 결과를 얻을 수 있습니다
+
 ## 📚 추가 도움말
 
 - 문제 발생 시: [GitHub Issues](https://github.com/anthropics/claude-code/issues)
