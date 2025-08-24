@@ -180,8 +180,93 @@ DEFAULT_TEMPLATE = """
 """
 
 
+def validate_sources(content: str) -> dict:
+    """Validate and analyze source links in the document"""
+    import re
+    from urllib.parse import urlparse
+    
+    # Find all markdown links
+    link_pattern = r'\[([^\]]+)\]\(([^)]+)\)'
+    links = re.findall(link_pattern, content)
+    
+    source_analysis = {
+        'total_links': len(links),
+        'valid_domains': 0,
+        'government_sources': 0,
+        'academic_sources': 0,
+        'legal_sources': 0,
+        'broken_links': [],
+        'quality_score': 0
+    }
+    
+    government_domains = ['go.kr', 'gov', '.gov.', 'moleg.go.kr', 'law.go.kr']
+    academic_domains = ['edu', '.ac.kr', 'scholar.google', 'jstor', 'doi.org']
+    legal_domains = ['scourt.go.kr', 'court.go.kr', 'lawnet.co.kr', 'glaw.scourt.go.kr']
+    
+    for text, url in links:
+        try:
+            parsed = urlparse(url)
+            if parsed.scheme and parsed.netloc:
+                source_analysis['valid_domains'] += 1
+                
+                domain = parsed.netloc.lower()
+                if any(gov in domain for gov in government_domains):
+                    source_analysis['government_sources'] += 1
+                elif any(edu in domain for edu in academic_domains):
+                    source_analysis['academic_sources'] += 1
+                elif any(legal in domain for legal in legal_domains):
+                    source_analysis['legal_sources'] += 1
+        except:
+            source_analysis['broken_links'].append(url)
+    
+    # Calculate quality score
+    if source_analysis['total_links'] > 0:
+        quality_factors = [
+            source_analysis['government_sources'] / source_analysis['total_links'] * 0.4,
+            source_analysis['academic_sources'] / source_analysis['total_links'] * 0.3,
+            source_analysis['legal_sources'] / source_analysis['total_links'] * 0.3,
+            (1 - len(source_analysis['broken_links']) / source_analysis['total_links']) * 0.2
+        ]
+        source_analysis['quality_score'] = min(100, sum(quality_factors) * 100)
+    
+    return source_analysis
+
+
+def enhance_document_quality(content: str, metadata: dict) -> tuple[str, dict]:
+    """Enhance document quality with automatic improvements"""
+    enhanced_content = content
+    quality_report = {}
+    
+    # 1. Source validation
+    source_analysis = validate_sources(content)
+    quality_report['sources'] = source_analysis
+    
+    # 2. Add missing metadata
+    if not metadata.get('sources_count'):
+        metadata['sources_count'] = source_analysis['total_links']
+    
+    if not metadata.get('quality_score'):
+        metadata['quality_score'] = f"{source_analysis['quality_score']:.1f}%"
+    
+    # 3. Korean legal citation format improvement
+    import re
+    
+    # Improve Korean court case citations
+    case_pattern = r'(\d{4}[가-힣]+\d+)'
+    cases = re.findall(case_pattern, enhanced_content)
+    if cases:
+        quality_report['legal_citations'] = len(cases)
+    
+    # Add legal document disclaimer if not present
+    if not re.search(r'법적\s*조언|법률\s*자문', enhanced_content):
+        disclaimer = "\n\n---\n**면책조항**: 본 문서는 연구 및 참고 목적으로 작성되었으며, 구체적인 법적 조언을 구성하지 않습니다. 실무 적용 시 전문가의 자문을 받으시기 바랍니다."
+        enhanced_content += disclaimer
+    
+    return enhanced_content, quality_report
+
+
 def extract_metadata(markdown_text: str) -> tuple[dict, str]:
-    """Extract YAML frontmatter from markdown"""
+    """Extract YAML frontmatter from markdown and enhance with quality data"""
     metadata = {}
     content = markdown_text
     
@@ -200,7 +285,39 @@ def extract_metadata(markdown_text: str) -> tuple[dict, str]:
         except ValueError:
             pass
     
-    return metadata, content
+    # Enhance document quality
+    enhanced_content, quality_report = enhance_document_quality(content, metadata)
+    
+    # Add quality information to metadata
+    if quality_report:
+        metadata['quality_report'] = quality_report
+    
+    return metadata, enhanced_content
+
+
+def generate_toc(html_content: str) -> str:
+    """Generate a simple table of contents from headers"""
+    import re
+    
+    # Find all headers
+    header_pattern = r'<h([1-6])(?:[^>]*id="([^"]*)"[^>]*|[^>]*)>([^<]+)</h[1-6]>'
+    headers = re.findall(header_pattern, html_content)
+    
+    if not headers:
+        return ''
+    
+    toc_html = '<div class="toc"><h2>목차</h2><ul>'
+    
+    for level, header_id, title in headers:
+        level = int(level)
+        if level <= 3:  # Only show h1, h2, h3 in TOC
+            indent = '  ' * (level - 1)
+            # Create anchor if no ID exists
+            anchor = header_id if header_id else title.lower().replace(' ', '-')
+            toc_html += f'\n{indent}<li><a href="#{anchor}">{title}</a></li>'
+    
+    toc_html += '\n</ul></div>'
+    return toc_html
 
 
 def markdown_to_html(markdown_file: Path, template_name: Optional[str] = None) -> str:
@@ -213,19 +330,52 @@ def markdown_to_html(markdown_file: Path, template_name: Optional[str] = None) -
     # Extract metadata and content
     metadata, content = extract_metadata(markdown_text)
     
-    # Convert markdown to HTML
+    # Process [TOC] before converting to HTML
+    toc_placeholder = ""
+    if '[TOC]' in content:
+        toc_placeholder = "<!--TOC_PLACEHOLDER-->"
+        content = content.replace('[TOC]', toc_placeholder)
+    
+    # Convert markdown to HTML with enhanced features
     html_content = markdown2.markdown(
         content,
-        extras=['tables', 'fenced-code-blocks', 'footnotes', 'strike', 'task_list']
+        extras=[
+            'tables', 
+            'fenced-code-blocks', 
+            'footnotes', 
+            'strike', 
+            'task_list',
+            'cuddled-lists',    # Better list formatting
+            'header-ids',       # Automatic header IDs for navigation
+            'wiki-tables'       # Enhanced table support
+        ]
     )
     
-    # Load template
+    # Process Mermaid diagrams - convert ```mermaid blocks to proper divs
+    import re
+    # markdown2 generates class="language-mermaid" for ```mermaid blocks
+    mermaid_pattern = r'<pre><code class="language-mermaid">(.*?)</code></pre>'
+    html_content = re.sub(mermaid_pattern, r'<div class="mermaid">\1</div>', html_content, flags=re.DOTALL)
+    
+    # Generate TOC if placeholder exists
+    if toc_placeholder and "<!--TOC_PLACEHOLDER-->" in html_content:
+        toc_html = generate_toc(html_content)
+        html_content = html_content.replace("<!--TOC_PLACEHOLDER-->", toc_html)
+    
+    # Load template (default to legal for Korean legal research)
+    if not template_name:
+        template_name = "legal"  # Default to legal template
+        
     if template_name and TEMPLATE_DIR.exists():
         env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
         try:
             template = env.get_template(f"{template_name}.html")
         except:
-            template = Template(DEFAULT_TEMPLATE)
+            # Fallback to legal if specified template doesn't exist
+            try:
+                template = env.get_template("legal.html")
+            except:
+                template = Template(DEFAULT_TEMPLATE)
     else:
         template = Template(DEFAULT_TEMPLATE)
     
