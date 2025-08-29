@@ -1,0 +1,99 @@
+{
+  "ui": {
+    "pretty_print": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": {
+          "tool": "Edit",
+          "paths": ["*.py", "src/**/*.py"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🚀 Formatting Python files...' && uv run ruff check --fix --unsafe-fixes $CLAUDE_FILE_PATHS --quiet && uv run ruff format $CLAUDE_FILE_PATHS --quiet && echo '✅ Formatting complete'",
+            "run_in_background": false
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "tool": "Edit",
+          "paths": ["src/**/*.py", "tests/**/*.py"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_FILE_PATHS\" =~ tests/ ]]; then echo '🧪 Running tests with coverage...' && uv run pytest --cov=src --cov-report=term-missing -q; else echo '🧪 Running quick tests...' && uv run pytest --tb=short -q; fi",
+            "run_in_background": true
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "tool": "Edit",
+          "paths": ["pyproject.toml"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📦 Syncing dependencies...' && uv lock --quiet && uv sync --quiet && echo '✅ Dependencies synchronized'",
+            "run_in_background": false
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "tool": "Edit",
+          "paths": ["src/**/*.py"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🔍 Running quality checks...' && (uv run mypy src/ --no-error-summary 2>/dev/null && echo '  ✅ Type check passed' || echo '  ⚠️  Type issues found') && (uv run bandit -r src/ -f txt -q 2>/dev/null && echo '  ✅ Security check passed' || echo '  ⚠️  Security issues found')",
+            "run_in_background": true
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "tool": "Edit",
+          "paths": ["src/**/*.py"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f scripts/update_docs.sh ] && bash scripts/update_docs.sh 2>/dev/null || true",
+            "run_in_background": true
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "tool": "Edit",
+          "paths": ["src/**/*.py"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run autoflake --check --remove-unused-variables $CLAUDE_FILE_PATHS 2>&1 | grep -q \"would be reformatted\" && echo \"💡 Tip: Run '/py-clean' to remove unused code\" || true",
+            "run_in_background": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": {},
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv sync --quiet 2>/dev/null && echo '📈 Ready ✅' || true",
+            "run_in_background": false
+          }
+        ]
+      }
+    ]
+  }
+}

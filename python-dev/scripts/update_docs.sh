@@ -13,52 +13,52 @@ NC='\033[0m' # No Color
 has_docs=false
 
 # Check for Sphinx
-if [ -f "docs/conf.py" ] && command -v sphinx-build &> /dev/null; then
+if [ -f "docs/conf.py" ] && uv run python -c "import sphinx" 2>/dev/null; then
     echo -e "${GREEN}📚 Updating Sphinx documentation...${NC}"
     
     # Check if source files changed since last build
     if [ -d "docs/_build" ]; then
         if find src -name "*.py" -newer docs/_build/html/index.html 2>/dev/null | grep -q .; then
-            sphinx-apidoc -o docs/api src/ -f -q
-            sphinx-build -b html docs docs/_build/html -q
+            uv run sphinx-apidoc -o docs/api src/ -f -q
+            uv run sphinx-build -b html docs docs/_build/html -q
             echo -e "${GREEN}✅ Sphinx docs updated${NC}"
         else
             echo -e "${YELLOW}⏭️  No changes, skipping Sphinx docs${NC}"
         fi
     else
         # First build
-        sphinx-apidoc -o docs/api src/ -f -q
-        sphinx-build -b html docs docs/_build/html -q
+        uv run sphinx-apidoc -o docs/api src/ -f -q
+        uv run sphinx-build -b html docs docs/_build/html -q
         echo -e "${GREEN}✅ Sphinx docs created${NC}"
     fi
     has_docs=true
 fi
 
 # Check for MkDocs
-if [ -f "mkdocs.yml" ] && command -v mkdocs &> /dev/null; then
+if [ -f "mkdocs.yml" ] && uv run python -c "import mkdocs" 2>/dev/null; then
     echo -e "${GREEN}📚 Updating MkDocs documentation...${NC}"
     
     # Check if source files changed since last build
     if [ -d "site" ]; then
         if find src -name "*.py" -newer site/index.html 2>/dev/null | grep -q .; then
-            mkdocs build --quiet
+            uv run mkdocs build --quiet
             echo -e "${GREEN}✅ MkDocs updated${NC}"
         else
             echo -e "${YELLOW}⏭️  No changes, skipping MkDocs${NC}"
         fi
     else
         # First build
-        mkdocs build --quiet
+        uv run mkdocs build --quiet
         echo -e "${GREEN}✅ MkDocs created${NC}"
     fi
     has_docs=true
 fi
 
 # Check for pdoc
-if command -v pdoc &> /dev/null; then
+if uv run python -c "import pdoc" 2>/dev/null; then
     if [ ! "$has_docs" = true ]; then
         echo -e "${GREEN}📚 Generating pdoc documentation...${NC}"
-        pdoc --html --output-dir docs src --force
+        uv run pdoc --html --output-dir docs src --force
         echo -e "${GREEN}✅ pdoc documentation generated${NC}"
         has_docs=true
     fi
