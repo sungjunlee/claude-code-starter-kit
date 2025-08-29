@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '🚀 Formatting Python files...' && uv run ruff check --fix --unsafe-fixes $CLAUDE_FILE_PATHS --quiet && uv run ruff format $CLAUDE_FILE_PATHS --quiet && echo '✅ Formatting complete'",
+            "command": "echo '🚀 Formatting Python files...' && uv run ruff check --fix $CLAUDE_FILE_PATHS --quiet && uv run ruff format $CLAUDE_FILE_PATHS --quiet && echo '✅ Formatting complete'",
             "run_in_background": false
           }
         ]
