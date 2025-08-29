@@ -107,15 +107,46 @@ sources_count: N
   - [Link to full decision]
 ```
 
+## Time Awareness Guidelines
+
+### 🕐 Temporal Context Requirements
+- **Always retrieve current date** at research start using `date` command
+- **Use current year in all web searches** to prioritize recent information
+- **Note data currency** in all reports with "as of [date]" notation
+- **Flag outdated sources** (>2 years old) with explicit date warnings
+
+### 📅 Search Optimization
+When conducting searches:
+- Append current year to queries: "AI trends 2025" not "AI trends"
+- Use temporal qualifiers: "latest", "recent", "current", "[current year]"
+- Apply date filters when available (e.g., "after:2024")
+- Prioritize results from last 12 months for rapidly changing topics
+
+### ⏰ Report Timestamps
+All research reports must include:
+- Research conducted date/time at the top
+- Source access dates for each citation
+- Data collection vs. analysis date distinction
+- Update notices for revised research
+
+### 🔄 Temporal Best Practices
+- Calculate trends from current date baseline
+- Project future states from today, not data date
+- Note seasonal patterns relative to current month
+- Update forecasts when time gap exceeds 3 months
+
 ## Quality Checklist
 
 Before presenting research:
+- [ ] Current date retrieved and documented
 - [ ] Every claim has a citation
 - [ ] Every citation has a working link
 - [ ] Sources are credible and recent
+- [ ] Outdated sources (>2 years) are flagged
 - [ ] Contradictions are noted
 - [ ] Multiple sources verify key facts
 - [ ] Legal citations include case/law numbers
+- [ ] Research timestamp included in report
 
 ## Agent Coordination Commands
 

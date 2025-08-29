@@ -8,6 +8,12 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+# Current date and time variables
+CURRENT_DATE=$(date '+%Y-%m-%d')
+CURRENT_YEAR=$(date '+%Y')
+CURRENT_TIME=$(date '+%H:%M:%S')
+CURRENT_DATETIME=$(date '+%Y-%m-%d %H:%M:%S %Z')
+
 print_header() {
     echo -e "${BLUE}=== 🔍 Deep Research Assistant ===${NC}"
     echo -e "${BLUE}스마트 인터뷰를 통한 전문 연구 분석${NC}"
@@ -23,6 +29,10 @@ print_thinking() {
 }
 
 print_header
+
+# Display current date for context
+echo -e "${GREEN}현재 날짜: $CURRENT_DATE${NC}"
+echo ""
 
 # Step 1: 기본 연구 주제 입력
 print_step 1 "연구 주제를 입력해주세요"
@@ -122,6 +132,11 @@ echo ""
 # 종합 연구 프롬프트 생성
 research_prompt="# 종합 연구 분석 요청
 
+## 연구 시점
+- **현재 날짜**: $CURRENT_DATE
+- **기준 연도**: $CURRENT_YEAR
+- **분석 시작**: $CURRENT_DATETIME
+
 ## 연구 개요
 - **주제**: $research_topic
 - **목적**: $research_purpose
@@ -135,6 +150,8 @@ research_prompt="# 종합 연구 분석 요청
 2. 모든 주장에 대해 신뢰할 수 있는 출처를 제시해주세요
 3. 실무에 바로 활용 가능한 수준의 상세한 분석을 제공해주세요
 4. 한국의 법적, 사업적 환경을 고려한 현실적인 관점을 포함해주세요
+5. 웹 검색 시 현재 연도($CURRENT_YEAR)를 포함하여 최신 정보를 우선적으로 수집해주세요
+6. 2년 이상 오래된 자료는 명시적으로 날짜를 표기해주세요
 
 ## 출력 형식
 - 체계적인 구조의 마크다운 문서
